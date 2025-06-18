@@ -265,3 +265,26 @@ if __name__ == "__main__":
     )
     print(f"\nFactory-created European Put:")
     print(f"  Black-Scholes Price: ${euro_put.black_scholes_price():.2f}")
+
+
+#expeted output:
+# European Call Option:
+#   Initial Stock Price: $100
+#   Strike Price: $100
+#   Time to Maturity: 1.0 years
+#   Risk-free Rate: 5.0%
+#   Volatility: 20.0%
+#   Black-Scholes Price: $10.45
+# Payoff for European Call at prices [ 90 100 110]: [0. 0. 10.]
+# Asian Put Option:
+#   Initial Stock Price: $100
+#   Strike Price: $100
+#   Averaging Points: 252
+#   Time Step: 0.0039 years
+# Path: [100  95 105  90 110]
+#   Average: 100.00
+#   Payoff: 0.00
+
+# Multiple paths payoffs: [0. 0. 0.]
+# Factory-created European Put:
+#   Black-Scholes Price: $12.07
