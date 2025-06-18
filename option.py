@@ -27,16 +27,28 @@ class Option(ABC):
         sigma (float): Volatility of the underlying asset
         option_type (OptionType): Type of the option (CALL or PUT)
     """
-    S0: float  # Initial stock price
-    K: float # Strike price
-    T : float  # Time to maturity in years
-    r: float  # Risk-free interest rate
-    sigma: float  # Volatility of the underlying asset
-    option_type: OptionType
+    def __init__(self, S0: float, K: float, T: float, r: float, sigma: float, option_type: OptionType):
+        """
+        Initialize the option with given parameters.
 
-    def __post_init__(self):
-        """Validate the option type."""
-        if self.SO <= 0:
+        Args:
+            S0 (float): Initial stock price.
+            K (float): Strike price.
+            T (float): Time to maturity in years.
+            r (float): Risk-free interest rate.
+            sigma (float): Volatility of the underlying asset.
+            option_type (OptionType): Type of the option (CALL or PUT).
+        """
+        self.S0 = S0
+        self.K = K
+        self.T = T
+        self.r = r
+        self.sigma = sigma
+        self.option_type = option_type
+
+    def _validate(self):
+        """Validate the option parameters."""
+        if self.S0 <= 0:
             raise ValueError("Initial stock price (S0) must be greater than 0.")
         if self.K <= 0:
             raise ValueError("Strike price (K) must be greater than 0.")
@@ -66,6 +78,18 @@ class Option(ABC):
 
 @dataclass
 class EuropeanOption(Option):
+    """Class for European options, which can only be exercised at maturity."""
+    S0: float
+    K: float
+    T: float
+    r: float
+    sigma: float
+    option_type: OptionType
+
+    def __post_init__(self):
+        super().__init__(self.S0, self.K, self.T, self.r, self.sigma, self.option_type)
+
+
     def payoff(self, S: np.ndarray) -> np.ndarray:
         """
         Calculate the payoff of a European option at maturity.
@@ -98,11 +122,17 @@ class EuropeanOption(Option):
 @dataclass
 class AsianOption(Option):
     """Class for Asian options, which are options where the payoff depends on the average price of the underlying asset over a certain period."""
+    S0: float
+    K: float
+    T: float
+    r: float
+    sigma: float
+    option_type: OptionType
     n_averaging_points: int = 252  # Default to daily averaging for one year
 
     def __post_init__(self):
         """Validate the Asian option parameters."""
-        super().__post_init__()
+        super().__init__(self.S0, self.K, self.T, self.r, self.sigma, self.option_type)
         if self.n_averaging_points <= 0:
             raise ValueError("Number of averaging points must be greater than 0.")
 
