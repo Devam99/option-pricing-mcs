@@ -47,7 +47,7 @@ class Option(ABC):
 
 
     @abstractmethod
-    def payoff(self, S: np.ndarry) -> np.ndarray:
+    def payoff(self, S: np.ndarray) -> np.ndarray:
         """
         Calculate the payoff of the option at maturity.
 
