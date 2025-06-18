@@ -177,13 +177,17 @@ class AsianOption(Option):
 #Factory function to create an option instance
 def create_option(option_class: str, **kwargs) -> Option:
     option_classes = {
-        "EuropeanOption": EuropeanOption,
-        "AsianOption": AsianOption
+        "european": EuropeanOption,
+        "asian": AsianOption
     }
-    if option_class.lower() not in option_classes:
-        raise ValueError(f"Unknown option class: {option_class}")
 
-    if "option_type" not in kwargs and isinstance(kwargs["option_type"], str):
+    option_class_lower = option_class.lower()
+
+
+    if option_class_lower not in option_classes:
+        raise ValueError(f"Unknown option class: {option_class}. Available options are: {list(option_classes.keys())}.")
+
+    if "option_type" in kwargs and isinstance(kwargs["option_type"], str):
         kwargs["option_type"] = OptionType(kwargs["option_type"].lower())
 
     return option_classes[option_class.lower()](**kwargs)
