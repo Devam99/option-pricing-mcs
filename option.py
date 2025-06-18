@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     # Test factory function
     euro_put = create_option(
-        'EuropeanOption',
+        'european',
         S0=100,
         K=110,
         T=0.5,
