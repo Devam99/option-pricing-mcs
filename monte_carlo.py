@@ -48,11 +48,11 @@ class MonteCarloOptionPricer:
         if random_seed is not None:
             np.random.seed(random_seed)
 
-    def generate_gbm_paths(self, S0: float, r: float, sigma: float, T: float, n_simulations: int, n_steps: int, anithetic:bool = False) -> np.ndarray:
+    def generate_gbm_paths(self, S0: float, r: float, sigma: float, T: float, n_simulations: int, n_steps: int, antithetic:bool = False) -> np.ndarray:
 
         dt = T / n_steps
 
-        if anithetic:
+        if antithetic:
             n_anti = n_simulations // 2
             Z = np.random.standard_normal(size=(n_anti, n_steps))
             Z = np.concatenate([Z, -Z], axis=0)
@@ -75,5 +75,56 @@ class MonteCarloOptionPricer:
         return paths
 
 
-    def price_european_option(self, option: EuropeanOption, n_simul):
+    def price_european_option(self, option: EuropeanOption, n_simulations: int = 10000, antithetic: bool = False, control_variable: bool = False) -> MonteCarloResult:
+        start_time = time.time()
+        dt = option.T
+
+        if antithetic:
+            n_anti = n_simulations // 2
+            Z = np.random.standard_normal(n_anti)
+            Z = np.concatenate([Z, -Z])
+            if n_simulations % 2 != 0:
+                Z = np.concatenate([Z, np.random.standard_normal(1)])
+        else:
+            Z = np.random.standard_normal(n_simulations)
+
+        ST = option.S0 * np.exp((option.r - 0.5 * option.sigma ** 2) * option.T + option.sigma * np.sqrt(option.T)* Z)
+
+        payoffs = option.payoff(ST)
+
+        if control_variable and hasattr(option, "black_scholes_price"):
+            control_payoffs = ST
+            control_mean = option.S0 * np.exp(option.r * option.T)
+
+            cov_matrix = np.cov(payoffs, control_payoffs)
+            beta = cov_matrix[0, 1] / cov_matrix[1, 1]
+
+        discounted_payoffs = np.exp(-option.r * option.T) * payoffs
+
+        price = np.mean(discounted_payoffs)
+        std_error = np.std(discounted_payoffs) / np.sqrt(n_simulations)
+        confidence_interval = (price - 1.96 * std_error, price + 1.96 * std_error)
+        computation_time = time.time() - start_time
+
+        return MonteCarloResult(price = price,
+                                std_error = std_error,
+                                confidence_interval = confidence_interval,
+                                computation_time = computation_time,
+                                m_simulations = n_simulations)
+
+    def price_asian_option(self, option: AsianOption, n_simulations: int = 10000, antithetic: bool = False) -> MonteCarloResult:
+
+        start_time = time.time()
+
+        if antithetic:
+            n_anti = n_simulations // 2
+            Z = np.random.standard_normal(n_anti)
+            Z = np.concatenate([Z, -Z])
+            if n_simulations % 2 != 0:
+                Z = np.concatenate([Z, np.random.standard_normal(1)])
+
+        else:
+            Z = np.random.standard_normal(n_simulations)
+
+
 
